@@ -1,9 +1,12 @@
 class Tree
   attr_accessor :children, :node_name
 
-  def initialize (name, children=[])
-    @children = children
+  def initialize (nestedhash)
+    name = nestedhash.keys.first
     @node_name = name
+
+    children = nestedhash.values.first.map { |k, v| Tree.new({k => v}) }
+    @children = children
   end
 
   def visit_all (&block)
@@ -16,10 +19,6 @@ class Tree
   end
 end
 
-
-# tree = Tree.new("Ruby",
-#                 [Tree.new("Reia"),
-#                   Tree.new("MacRuby")] )
 
 tree = Tree.new( {'grandpa' => {'dad' => {'child 1' => {}, 'child 2' => {} }, 'uncle' => {'child 3' => {}, 'child 4' => {} } } } )
 
