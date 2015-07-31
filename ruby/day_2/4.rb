@@ -9,10 +9,10 @@ class Grep
 
   def find (term)
     pattern = Regexp.new term
-    @lines.reduce([]) do |matches, line|
+    @lines.each_with_index.reduce([]) do |matches, (line, i)|
       match = pattern =~ line
       if match
-        matches << {:lineNumber => match, :lineText => line}
+        matches << {:lineNumber => i + 1, :lineText => line}
       end
       matches
     end
