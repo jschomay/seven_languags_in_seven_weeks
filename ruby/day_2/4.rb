@@ -9,10 +9,12 @@ class Grep
 
   def find (term)
     pattern = Regexp.new term
-    @lines.each_with_index.select do |line, i|
-      if pattern =~ line
-        puts "\"#{term}\" found on line #{i}: #{line}"
+    @lines.reduce([]) do |matches, line|
+      match = pattern =~ line
+      if match
+        matches << {:lineNumber => match, :lineText => line}
       end
+      matches
     end
   end
 end
@@ -29,6 +31,12 @@ terms = [
 
 terms.each do |term|
   puts "Searching for \"#{term}\""
-  grep.find term
+  matches = grep.find term
+  if matches.length > 0
+    puts "#{matches.length} matches found:"
+    matches.each { |match| puts "Line #{match[:lineNumber]}: #{match[:lineText]}" }
+  else
+    puts 'No matches found'
+  end
   puts
 end
