@@ -5724,6 +5724,7 @@ Elm.Main.make = function (_elm) {
    $Color = Elm.Color.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Mouse = Elm.Mouse.make(_elm),
@@ -5732,39 +5733,53 @@ Elm.Main.make = function (_elm) {
    $Time = Elm.Time.make(_elm),
    $Window = Elm.Window.make(_elm);
    var _op = {};
-   var arc = function (_p0) {
+   var update = F2(function (_p0,acc) {
       var _p1 = _p0;
-      var _p2 = _p1._0;
-      var circlePoint = function (angle) {    return {ctor: "_Tuple2",_0: _p2 * $Basics.sin(angle),_1: _p2 * $Basics.cos(angle)};};
-      return A2($List.map,circlePoint,A2($List.map,function (x) {    return x / 100;},_U.range(_p1._1,_p1._2)));
+      var _p4 = _p1._0;
+      var _p2 = _p4;
+      var w = _p2._0;
+      var _p3 = acc;
+      var carWidth = _p3._1;
+      var position = _p3._2;
+      var oldSpeed = _p3._3;
+      var speed = (_U.cmp(oldSpeed,0) < 0 ? -1 : 1) * 10 * $Basics.toFloat(_p1._1) / ($Basics.toFloat(w) / 2);
+      return _U.cmp($Basics.toFloat(position),$Basics.toFloat(w) / 2 - carWidth / 2) > 0 || _U.cmp($Basics.toFloat(position),
+      0 - $Basics.toFloat(w) / 2 + carWidth / 2) < 0 ? {ctor: "_Tuple4"
+                                                       ,_0: _p4
+                                                       ,_1: carWidth
+                                                       ,_2: position - $Basics.round(speed)
+                                                       ,_3: 0 - speed} : {ctor: "_Tuple4",_0: _p4,_1: carWidth,_2: position + $Basics.round(speed),_3: speed};
+   });
+   var drawCar = F2(function (carWidth,x) {
+      return A2($Graphics$Collage.move,
+      {ctor: "_Tuple2",_0: x,_1: 0},
+      $Graphics$Collage.group(_U.list([A2($Graphics$Collage.filled,$Color.red,A2($Graphics$Collage.rect,carWidth,50))
+                                      ,A2($Graphics$Collage.move,
+                                      {ctor: "_Tuple2",_0: 0,_1: 40},
+                                      A2($Graphics$Collage.filled,$Color.red,A2($Graphics$Collage.rect,carWidth / 2,40)))
+                                      ,A2($Graphics$Collage.move,
+                                      {ctor: "_Tuple2",_0: -50,_1: -30},
+                                      A2($Graphics$Collage.filled,$Color.black,$Graphics$Collage.circle(20)))
+                                      ,A2($Graphics$Collage.move,
+                                      {ctor: "_Tuple2",_0: 50,_1: -30},
+                                      A2($Graphics$Collage.filled,$Color.black,$Graphics$Collage.circle(20)))])));
+   });
+   var display = function (_p5) {
+      var _p6 = _p5;
+      return A2($Graphics$Element.flow,
+      $Graphics$Element.down,
+      _U.list([$Graphics$Element.show(A2($Basics._op["++"],"Speed: ",$Basics.toString($Basics.round(_p6._3))))
+              ,A3($Graphics$Collage.collage,_p6._0._0,_p6._0._1,_U.list([A2(drawCar,_p6._1,$Basics.toFloat(_p6._2))]))]));
    };
-   var smiley = F3(function (down,x,y) {
-      var smileAngle = down ? -110 : -120;
-      var blinkY = down ? 30 : 50;
-      var blinkHeight = down ? 10 : 90;
-      var style = _U.update($Graphics$Collage.defaultLine,{width: 5});
-      return $Graphics$Collage.group(_U.list([A2($Graphics$Collage.filled,$Color.yellow,$Graphics$Collage.circle(200))
-                                             ,A2($Graphics$Collage.move,
-                                             {ctor: "_Tuple2",_0: 60 + x / 20,_1: 50 - y / 30},
-                                             A2($Graphics$Collage.filled,$Color.black,A2($Graphics$Collage.oval,50,90)))
-                                             ,A2($Graphics$Collage.move,
-                                             {ctor: "_Tuple2",_0: -60 + x / 20,_1: blinkY - y / 30},
-                                             A2($Graphics$Collage.filled,$Color.black,A2($Graphics$Collage.oval,50,blinkHeight)))
-                                             ,A2($Graphics$Collage.move,
-                                             {ctor: "_Tuple2",_0: 0,_1: -20},
-                                             A2($Graphics$Collage.rotate,
-                                             $Basics.degrees(smileAngle),
-                                             A2($Graphics$Collage.traced,style,$Graphics$Collage.path(arc({ctor: "_Tuple3",_0: 100,_1: 0,_2: 200})))))]));
-   });
-   var draw = F3(function (down,_p4,_p3) {
-      var _p5 = _p4;
-      var _p8 = _p5._0;
-      var _p7 = _p5._1;
-      var _p6 = _p3;
-      var y$ = $Basics.toFloat(_p6._1) - $Basics.toFloat(_p7) / 2;
-      var x$ = $Basics.toFloat(_p6._0) - $Basics.toFloat(_p8) / 2;
-      return A3($Graphics$Collage.collage,_p8,_p7,_U.list([A2($Graphics$Collage.move,{ctor: "_Tuple2",_0: x$ / 2,_1: (0 - y$) / 2},A3(smiley,down,x$,y$))]));
-   });
-   var main = A4($Signal.map3,draw,$Mouse.isDown,$Window.dimensions,A2($Signal.sampleOn,$Time.fps(60),$Mouse.position));
-   return _elm.Main.values = {_op: _op,arc: arc,smiley: smiley,draw: draw,main: main};
+   var main = function () {
+      var carWidth = 160;
+      var x = 0;
+      return A2($Signal.map,
+      display,
+      A3($Signal.foldp,
+      update,
+      {ctor: "_Tuple4",_0: {ctor: "_Tuple2",_0: 100,_1: 100},_1: carWidth,_2: x,_3: 0},
+      A3($Signal.map2,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),$Window.dimensions,A2($Signal.sampleOn,$Time.fps(60),$Mouse.x))));
+   }();
+   return _elm.Main.values = {_op: _op,drawCar: drawCar,display: display,update: update,main: main};
 };

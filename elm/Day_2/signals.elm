@@ -1,6 +1,7 @@
 import Mouse
 import Signal exposing (..)
 import Graphics.Element exposing (..)
+import Time
 
 output a b =
   flow down [show a, show b]
@@ -51,5 +52,10 @@ showLastKnowY =
   in
     map prettyShow lastKnownY
 
+----
 
-main = showLastKnowY
+countUp =
+  foldp (+) 0 <| map (always 1) (Time.every Time.second)
+
+main = map show countUp
+
